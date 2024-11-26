@@ -21,7 +21,7 @@ function Input({
   return (
     <input
       type="text"
-      className={`bg-gray-800 p-2 rounded w-full placeholder:text-gray-500 border-gray-400 border-2 ${className}`}
+      className={`bg-gray-800 p-2 rounded w-full placeholder:text-gray-500 border-gray-400 border-2 font-mono ${className}`}
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
