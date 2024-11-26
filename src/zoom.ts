@@ -30,13 +30,11 @@ export function useZoomState(initial: {
       let yScale = window.innerHeight / height
 
       if (xScale < yScale) {
-        console.log('xScale < yScale')
         innerState.current.scale = xScale
         innerState.current.offset.x = -bounds.left * xScale
         innerState.current.offset.y =
           -bounds.top + (innerState.current.target.height - height * xScale) / 2
       } else {
-        console.log('yScale < xScale')
         innerState.current.scale = yScale
         innerState.current.offset.x =
           -bounds.left + (innerState.current.target.width - width * yScale) / 2
