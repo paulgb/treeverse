@@ -34,7 +34,7 @@ const TreeVisualizationInner = memo(function TreeVisualization({
           <g
             key={node.treeNode.post.uri}
             transform={`translate(${node.x * UNIT}, ${node.y * UNIT})`}
-            onClick={() => setSelected(node)}
+            onMouseOver={() => setSelected(node)}
           >
             <rect x={-DIM / 2} y={-DIM / 2} width={DIM} height={DIM} fill="white" />
             <image
