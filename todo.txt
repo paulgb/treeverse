@@ -7,4 +7,4 @@
 - [x] more detail on main page
 - [x] add license
 - [x] add prettier
-- [ ] make it live on github
+- [x] make it live on github
