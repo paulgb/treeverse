@@ -1,0 +1,10 @@
+- [ ] Set initial zoom level appropriately.
+- [x] bring over favicon
+- [x] main landing page
+- [ ] side panel
+- [x] make it live at treeverse.app
+- [x] fix build
+- [x] more detail on main page
+- [x] add license
+- [x] add prettier
+- [ ] make it live on github

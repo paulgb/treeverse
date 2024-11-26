@@ -1,3 +1,0 @@
-/view/*    /view/index.html   200
-/json/*    https://s3.amazonaws.com/treeverse/:splat.json   200
-/share     https://1l8hy2eaaj.execute-api.us-east-1.amazonaws.com/default/treeverse_post    200
