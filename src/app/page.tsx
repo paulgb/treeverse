@@ -30,7 +30,7 @@ export default function Home() {
       </div>
       <P>
         Created by <A href="https://bsky.app/profile/paulbutler.org">Paul Butler</A>.{' '}
-        <A href="https://github.com/paulgb/treeverse">GitHub</A>
+        Source code is available on <A href="https://github.com/paulgb/treeverse">GitHub</A>.
       </P>
     </div>
   )
