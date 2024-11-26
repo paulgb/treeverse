@@ -13,7 +13,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="w-full h-full">
-      <body className="w-full h-full bg-gray-900 text-white">{children}</body>
+      <body className="w-full h-full bg-gray-900 text-white">
+        {children}
+
+        {process.env.STATS_PIXEL && (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: process.env.STATS_PIXEL,
+            }}
+          />
+        )}
+      </body>
     </html>
   )
 }
