@@ -1,10 +1,9 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-const DEFAULT_URL =
-  "https://bsky.app/profile/paulbutler.org/post/3lbn5m3ddus2d";
+const DEFAULT_URL = 'https://bsky.app/profile/paulbutler.org/post/3lbn5m3ddus2d'
 
 function Input({
   placeholder,
@@ -13,11 +12,11 @@ function Input({
   onChange,
   onSubmit,
 }: {
-  placeholder: string;
-  className?: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  onSubmit?: () => void;
+  placeholder: string
+  className?: string
+  value?: string
+  onChange?: (value: string) => void
+  onSubmit?: () => void
 }) {
   return (
     <input
@@ -27,12 +26,12 @@ function Input({
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          onSubmit?.();
+        if (e.key === 'Enter') {
+          onSubmit?.()
         }
       }}
     />
-  );
+  )
 }
 
 function Button({
@@ -41,10 +40,10 @@ function Button({
   className,
   onClick,
 }: {
-  children: React.ReactNode;
-  disabled?: boolean;
-  className?: string;
-  onClick?: () => void;
+  children: React.ReactNode
+  disabled?: boolean
+  className?: string
+  onClick?: () => void
 }) {
   return (
     <button
@@ -54,47 +53,40 @@ function Button({
     >
       {children}
     </button>
-  );
+  )
 }
 
-function extractPartsFromProfile(
-  value: string,
-): { profile: string; post: string } | null {
-  const rx =
-    /^(https?:\/\/)?(bsky\.app|bsky\.social)\/profile\/([^\/]+)\/post\/([^\/]+)$/;
-  const match = value.match(rx);
+function extractPartsFromProfile(value: string): { profile: string; post: string } | null {
+  const rx = /^(https?:\/\/)?(bsky\.app|bsky\.social)\/profile\/([^\/]+)\/post\/([^\/]+)$/
+  const match = value.match(rx)
   if (!match) {
-    return null;
+    return null
   }
-  return { profile: match[3], post: match[4] };
+  return { profile: match[3], post: match[4] }
 }
 
-function extractPartsFromAtUrl(
-  value: string,
-): { profile: string; post: string } | null {
-  const rx = /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([^/]+)$/;
-  const match = value.match(rx);
+function extractPartsFromAtUrl(value: string): { profile: string; post: string } | null {
+  const rx = /^at:\/\/([^/]+)\/app\.bsky\.feed\.post\/([^/]+)$/
+  const match = value.match(rx)
   if (!match) {
-    return null;
+    return null
   }
-  return { profile: match[1], post: match[2] };
+  return { profile: match[1], post: match[2] }
 }
 
-function extractPartsFromUrl(
-  value: string,
-): { profile: string; post: string } | null {
-  value = value.trim();
-  return extractPartsFromProfile(value) || extractPartsFromAtUrl(value);
+function extractPartsFromUrl(value: string): { profile: string; post: string } | null {
+  value = value.trim()
+  return extractPartsFromProfile(value) || extractPartsFromAtUrl(value)
 }
 
 export default function Urlbar() {
-  const router = useRouter();
-  const [url, setUrl] = useState(DEFAULT_URL);
-  const parts = extractPartsFromUrl(url);
+  const router = useRouter()
+  const [url, setUrl] = useState(DEFAULT_URL)
+  const parts = extractPartsFromUrl(url)
 
   const handleGo = () => {
-    router.push(`/profile/${parts?.profile}/post/${parts?.post}`);
-  };
+    router.push(`/profile/${parts?.profile}/post/${parts?.post}`)
+  }
 
   return (
     <div className="flex flex-row gap-2">
@@ -108,5 +100,5 @@ export default function Urlbar() {
         Go
       </Button>
     </div>
-  );
+  )
 }
