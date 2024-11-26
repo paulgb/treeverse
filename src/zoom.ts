@@ -26,8 +26,8 @@ export function useZoomState(initial: {
     (bounds: { top: number; left: number; bottom: number; right: number }) => {
       const width = bounds.right - bounds.left
       const height = bounds.bottom - bounds.top
-      let xScale = window.innerWidth / width
-      let yScale = window.innerHeight / height
+      let xScale = innerState.current.target.width / width
+      let yScale = innerState.current.target.height / height
 
       if (xScale < yScale) {
         innerState.current.scale = xScale
