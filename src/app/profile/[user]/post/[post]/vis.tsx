@@ -6,14 +6,13 @@ import { useZoomState } from '@/zoom'
 import React, { memo, useEffect, useState } from 'react'
 
 const DIM = 40
-const XD = 1400
-const YD = 700
+const UNIT = 120
 
 function smoothPath(point1: { x: number; y: number }, point2: { x: number; y: number }) {
-  const startX = XD * point1.x
-  const startY = YD * point1.y
-  const endX = XD * point2.x
-  const endY = YD * point2.y
+  const startX = UNIT * point1.x
+  const startY = UNIT * point1.y
+  const endX = UNIT * point2.x
+  const endY = UNIT * point2.y
   return `M${startX},${startY} C${startX},${startY} ${endX},${startY} ${endX},${endY}`
 }
 
@@ -33,7 +32,10 @@ const TreeVisualization = memo(function TreeVisualization({
       </g>
       <g>
         {postState.map((node) => (
-          <g key={node.treeNode.post.uri} transform={`translate(${node.x * XD}, ${node.y * YD})`}>
+          <g
+            key={node.treeNode.post.uri}
+            transform={`translate(${node.x * UNIT}, ${node.y * UNIT})`}
+          >
             <rect x={-DIM / 2} y={-DIM / 2} width={DIM} height={DIM} fill="white" />
             <image
               href={node.treeNode.post.author.avatar}
@@ -62,14 +64,28 @@ const TreeVisualization = memo(function TreeVisualization({
 
 export default function Vis({ user, post }: { user: string; post: string }) {
   const [postState, setPostState] = useState<LayoutNode[]>([])
-  const zoomState = useZoomState()
+  const zoomState = useZoomState({ offset: { x: 0, y: 0 }, scale: 1 })
 
   useEffect(() => {
     getPosts(user, post).then((threadResponse: AtProtoThreadResponse) => {
       const tree = new Tree(threadResponse.thread)
-      setPostState(tree.root.getChildren())
+      const postState = tree.root.getChildren()
+      setPostState(postState)
+
+      let maxX = 0
+      let maxY = 0
+      for (const node of postState) {
+        maxX = Math.max(maxX, node.x * UNIT)
+        maxY = Math.max(maxY, node.y * UNIT)
+      }
+      zoomState.setBounds({
+        top: -UNIT,
+        left: -UNIT,
+        right: maxX + UNIT,
+        bottom: maxY + UNIT,
+      })
     })
-  }, [user, post])
+  }, [user, post, zoomState.setBounds])
 
   return (
     <div className="w-full h-full">

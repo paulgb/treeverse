@@ -1,4 +1,4 @@
-- [ ] Set initial zoom level appropriately.
+- [x] Set initial zoom level appropriately.
 - [x] bring over favicon
 - [x] main landing page
 - [ ] side panel

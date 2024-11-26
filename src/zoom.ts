@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 
-export function useZoomState() {
-  const innerState = useRef({ offset: { x: 0, y: 0 }, scale: 1 })
+export function useZoomState(initial: { offset: { x: number; y: number }; scale: number }) {
+  const innerState = useRef(initial)
   const [transform, setTransform] = useState(`translate(0, 0) scale(1)`)
 
   const updateTransform = useCallback(() => {
@@ -9,6 +9,31 @@ export function useZoomState() {
       `translate(${innerState.current.offset.x}, ${innerState.current.offset.y}) scale(${innerState.current.scale})`,
     )
   }, [])
+
+  const setBounds = useCallback(
+    (bounds: { top: number; left: number; bottom: number; right: number }) => {
+      const width = bounds.right - bounds.left
+      const height = bounds.bottom - bounds.top
+      let xScale = window.innerWidth / width
+      let yScale = window.innerHeight / height
+
+      if (xScale < yScale) {
+        console.log('xScale < yScale')
+        innerState.current.scale = xScale
+        innerState.current.offset.x = -bounds.left * xScale
+        innerState.current.offset.y = -bounds.top + (window.innerHeight - height * xScale) / 2
+      } else {
+        console.log('yScale < xScale')
+        innerState.current.scale = yScale
+        innerState.current.offset.x = -bounds.left + (window.innerWidth - width * yScale) / 2
+        innerState.current.offset.y = -bounds.top * yScale
+      }
+
+      // innerState.current.scale = Math.min(xScale, yScale)
+      updateTransform()
+    },
+    [updateTransform],
+  )
 
   const handleWheel = useCallback(
     (event: React.WheelEvent<SVGSVGElement>) => {
@@ -40,5 +65,6 @@ export function useZoomState() {
     transform,
     handleWheel,
     handleMouseMove,
+    setBounds,
   }
 }

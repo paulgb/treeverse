@@ -41,21 +41,19 @@ export class Post {
   private getChildrenInner(
     xOffset: number,
     yOffset: number,
-    xSize: number,
-    ySize: number,
     parent: LayoutNode | null,
   ): LayoutNode[] {
     const nodes: LayoutNode[] = []
     const thisNode: LayoutNode = {
-      x: (xOffset + this.width / 2) * xSize,
-      y: yOffset * ySize + ySize / 2,
+      x: xOffset + this.width / 2,
+      y: yOffset,
       parent,
       treeNode: this,
     }
     nodes.push(thisNode)
 
     for (const child of this.children) {
-      nodes.push(...child.getChildrenInner(xOffset, yOffset + 1, xSize, ySize, thisNode))
+      nodes.push(...child.getChildrenInner(xOffset, yOffset + 1, thisNode))
       xOffset += child.width
     }
 
@@ -63,6 +61,6 @@ export class Post {
   }
 
   getChildren(): LayoutNode[] {
-    return this.getChildrenInner(0, 0, 1 / this.width, 1 / this.height, null)
+    return this.getChildrenInner(0, 0, null)
   }
 }

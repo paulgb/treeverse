@@ -4,11 +4,9 @@ export async function getPosts(user: string, post: string): Promise<AtProtoThrea
   const url = new URL('https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread')
   url.searchParams.set('uri', atUri)
   url.searchParams.set('depth', '6')
-  // console.log(url.toString());
 
   const res = await fetch(url)
   const json = await res.json()
-  // console.log(json);
   return json
 }
 
