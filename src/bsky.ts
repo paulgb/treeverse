@@ -1,5 +1,4 @@
 export async function getPosts(user: string, post: string): Promise<AtProtoThreadResponse> {
-  console.log('user', user)
   const atUri = `at://${user}/app.bsky.feed.post/${post}`
   const url = new URL('https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread')
   url.searchParams.set('uri', atUri)

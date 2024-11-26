@@ -1,8 +1,12 @@
 import { useCallback, useRef, useState } from 'react'
 
-export function useZoomState(initial: { offset: { x: number; y: number }; scale: number }) {
+export function useZoomState(initial: {
+  offset: { x: number; y: number }
+  scale: number
+  target: { width: number; height: number }
+}) {
   const innerState = useRef(initial)
-  const [transform, setTransform] = useState(`translate(0, 0) scale(1)`)
+  const [transform, setTransform] = useState('')
 
   const updateTransform = useCallback(() => {
     setTransform(
@@ -10,22 +14,30 @@ export function useZoomState(initial: { offset: { x: number; y: number }; scale:
     )
   }, [])
 
+  const setTarget = useCallback(
+    (target: { width: number; height: number }) => {
+      innerState.current.target = target
+      updateTransform()
+    },
+    [updateTransform],
+  )
+
   const setBounds = useCallback(
     (bounds: { top: number; left: number; bottom: number; right: number }) => {
       const width = bounds.right - bounds.left
       const height = bounds.bottom - bounds.top
-      let xScale = window.innerWidth / width
-      let yScale = window.innerHeight / height
+      let xScale = innerState.current.target.width / width
+      let yScale = innerState.current.target.height / height
 
       if (xScale < yScale) {
-        console.log('xScale < yScale')
         innerState.current.scale = xScale
         innerState.current.offset.x = -bounds.left * xScale
-        innerState.current.offset.y = -bounds.top + (window.innerHeight - height * xScale) / 2
+        innerState.current.offset.y =
+          -bounds.top + (innerState.current.target.height - height * xScale) / 2
       } else {
-        console.log('yScale < xScale')
         innerState.current.scale = yScale
-        innerState.current.offset.x = -bounds.left + (window.innerWidth - width * yScale) / 2
+        innerState.current.offset.x =
+          -bounds.left + (innerState.current.target.width - width * yScale) / 2
         innerState.current.offset.y = -bounds.top * yScale
       }
 
@@ -66,5 +78,6 @@ export function useZoomState(initial: { offset: { x: number; y: number }; scale:
     handleWheel,
     handleMouseMove,
     setBounds,
+    setTarget,
   }
 }
