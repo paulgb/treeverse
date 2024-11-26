@@ -3,7 +3,7 @@
 import { AtProtoThreadResponse, getPosts } from '@/bsky'
 import { LayoutNode, Tree } from '@/post'
 import { useZoomState } from '@/zoom'
-import React, { memo, useEffect, useState } from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 const DIM = 40
 const UNIT = 120
@@ -64,7 +64,20 @@ const TreeVisualization = memo(function TreeVisualization({
 
 export default function Vis({ user, post }: { user: string; post: string }) {
   const [postState, setPostState] = useState<LayoutNode[]>([])
-  const zoomState = useZoomState({ offset: { x: 0, y: 0 }, scale: 1 })
+  const zoomState = useZoomState({
+    offset: { x: 0, y: 0 },
+    scale: 1,
+    target: { width: 0, height: 0 },
+  })
+
+  const svgRef = useCallback(
+    (el: SVGSVGElement) => {
+      if (el) {
+        zoomState.setTarget({ width: el.clientWidth, height: el.clientHeight })
+      }
+    },
+    [zoomState.setTarget],
+  )
 
   useEffect(() => {
     getPosts(user, post).then((threadResponse: AtProtoThreadResponse) => {
@@ -93,6 +106,7 @@ export default function Vis({ user, post }: { user: string; post: string }) {
         className="w-full h-full"
         onWheel={zoomState.handleWheel}
         onMouseMove={zoomState.handleMouseMove}
+        ref={svgRef}
       >
         <g transform={zoomState.transform}>
           <TreeVisualization postState={postState} />

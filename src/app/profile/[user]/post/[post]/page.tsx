@@ -1,3 +1,4 @@
+import Sidebar from './sidebar'
 import Vis from './vis'
 
 export default async function Page({
@@ -9,5 +10,14 @@ export default async function Page({
   user = decodeURIComponent(user)
   post = decodeURIComponent(post)
 
-  return <Vis user={user} post={post} />
+  return (
+    <div className="flex h-full w-full">
+      <div className="flex-1 bg-red-500">
+        <Vis user={user} post={post} />
+      </div>
+      <div className="w-64">
+        <Sidebar />
+      </div>
+    </div>
+  )
 }
