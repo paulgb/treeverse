@@ -58,6 +58,38 @@ export default function Sidebar({ selected }: { selected: LayoutNode | null }) {
 
   return (
     <div className="flex flex-col gap-2 p-2 overflow-y-auto h-full" ref={sidebarRef}>
+      <div className="p-4 border border-gray-700 rounded-md bg-gray-800">
+        <p className="text-sm text-gray-300 mb-2">
+          <strong>Treeverse</strong> is a tool for visualizing threaded{' '}
+          <a href="https://bsky.app/" className="text-blue-300 hover:text-blue-400">
+            Bluesky
+          </a>{' '}
+          conversations.
+        </p>
+        <p className="text-sm text-gray-500">
+          Created by{' '}
+          <a
+            href="https://bsky.app/profile/paulbutler.org"
+            className="text-blue-300 hover:text-blue-400"
+            target="_blank"
+          >
+            Paul Butler
+          </a>
+          . Source code available on{' '}
+          <a
+            href="https://github.com/paulgb/treeverse"
+            className="text-blue-300 hover:text-blue-400"
+            target="_blank"
+          >
+            GitHub
+          </a>
+          . Visualize a{' '}
+          <a className="text-blue-300 hover:text-blue-400" href="/">
+            different post
+          </a>
+          .
+        </p>
+      </div>
       {thread.map((post, i) => (
         <Post post={post} key={i} />
       ))}
