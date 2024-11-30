@@ -34,7 +34,7 @@ function Post({ post }: { post: AtProtoPost }) {
 function collectThread(node: LayoutNode | null): AtProtoPost[] {
   let thread: AtProtoPost[] = []
   while (node) {
-    thread.push(node.treeNode.post)
+    thread.push(node.post.post)
     node = node.parent
   }
   return thread.reverse()

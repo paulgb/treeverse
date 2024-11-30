@@ -1,11 +1,17 @@
 import { useCallback, useRef, useState } from 'react'
 
-export function useZoomState(initial: {
+interface ZoomState {
   offset: { x: number; y: number }
   scale: number
   target: { width: number; height: number }
-}) {
-  const innerState = useRef(initial)
+}
+
+export function useZoomState() {
+  const innerState = useRef<ZoomState>({
+    offset: { x: 0, y: 0 },
+    scale: 1,
+    target: { width: 0, height: 0 },
+  })
   const [transform, setTransform] = useState('')
 
   const updateTransform = useCallback(() => {
@@ -41,7 +47,6 @@ export function useZoomState(initial: {
         innerState.current.offset.y = -bounds.top * yScale
       }
 
-      // innerState.current.scale = Math.min(xScale, yScale)
       updateTransform()
     },
     [updateTransform],

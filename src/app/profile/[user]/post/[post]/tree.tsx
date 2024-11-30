@@ -1,6 +1,6 @@
 import { LayoutNode } from '@/post'
 import { useZoomState } from '@/zoom'
-import React, { memo, useCallback, useEffect } from 'react'
+import React, { memo, useCallback, useEffect, useRef } from 'react'
 
 const DIM = 40
 const UNIT = 120
@@ -15,16 +15,18 @@ function smoothPath(point1: { x: number; y: number }, point2: { x: number; y: nu
 
 const TreeVisualizationInner = memo(function TreeVisualization({
   postState,
-  setSelected,
+  onSetSelected,
+  onExpandNode,
 }: {
   postState: LayoutNode[]
-  setSelected: (node: LayoutNode) => void
+  onSetSelected: (node: LayoutNode) => void
+  onExpandNode: (node: LayoutNode) => void
 }) {
   return (
     <>
       <g>
         {postState.map((node) => (
-          <React.Fragment key={node.treeNode.post.uri}>
+          <React.Fragment key={node.post.post.uri}>
             {node.parent && <path d={smoothPath(node.parent, node)} stroke="#aaa" fill="none" />}
           </React.Fragment>
         ))}
@@ -32,13 +34,14 @@ const TreeVisualizationInner = memo(function TreeVisualization({
       <g>
         {postState.map((node) => (
           <g
-            key={node.treeNode.post.uri}
+            key={node.post.post.uri}
             transform={`translate(${node.x * UNIT}, ${node.y * UNIT})`}
-            onMouseOver={() => setSelected(node)}
+            onMouseOver={() => onSetSelected(node)}
+            onDoubleClick={() => onExpandNode(node)}
           >
             <rect x={-DIM / 2} y={-DIM / 2} width={DIM} height={DIM} fill="white" />
             <image
-              href={node.treeNode.post.author.avatar}
+              href={node.post.post.author.avatar}
               x={-DIM / 2}
               y={-DIM / 2}
               width={DIM}
@@ -50,7 +53,7 @@ const TreeVisualizationInner = memo(function TreeVisualization({
               width={DIM}
               height={DIM}
               fill="none"
-              stroke="#ddd"
+              stroke={node.post.hasMoreChildren() ? 'red' : '#ddd'}
               strokeWidth={3}
               rx={3}
               ry={3}
@@ -64,16 +67,15 @@ const TreeVisualizationInner = memo(function TreeVisualization({
 
 export default function TreeVisualization({
   postState,
-  setSelected,
+  onSetSelected,
+  onExpandNode,
 }: {
   postState: LayoutNode[]
-  setSelected: (node: LayoutNode) => void
+  onSetSelected: (node: LayoutNode) => void
+  onExpandNode: (node: LayoutNode) => void
 }) {
-  const zoomState = useZoomState({
-    offset: { x: 0, y: 0 },
-    scale: 1,
-    target: { width: 0, height: 0 },
-  })
+  const zoomState = useZoomState()
+  const initialized = useRef(false)
 
   useEffect(() => {
     let maxX = 0
@@ -82,12 +84,17 @@ export default function TreeVisualization({
       maxX = Math.max(maxX, node.x * UNIT)
       maxY = Math.max(maxY, node.y * UNIT)
     }
-    zoomState.setBounds({
-      top: -UNIT,
-      left: -UNIT,
-      right: maxX + UNIT,
-      bottom: maxY + UNIT,
-    })
+
+    if (!initialized.current && postState.length > 0) {
+      zoomState.setBounds({
+        top: -UNIT,
+        left: -UNIT,
+        right: maxX + UNIT,
+        bottom: maxY + UNIT,
+      })
+
+      initialized.current = true
+    }
   }, [postState])
 
   const svgRef = useCallback(
@@ -106,7 +113,11 @@ export default function TreeVisualization({
       ref={svgRef}
     >
       <g transform={zoomState.transform}>
-        <TreeVisualizationInner postState={postState} setSelected={setSelected} />
+        <TreeVisualizationInner
+          postState={postState}
+          onSetSelected={onSetSelected}
+          onExpandNode={onExpandNode}
+        />
       </g>
     </svg>
   )

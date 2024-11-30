@@ -1,28 +1,46 @@
 'use client'
 
-import { AtProtoThreadResponse, getPosts } from '@/bsky'
+import { AtProtoThreadResponse, getPost, getPostByAtUri } from '@/bsky'
 import { LayoutNode, Tree } from '@/post'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import TreeVisualization from './tree'
 import Sidebar from './sidebar'
 
 export default function Vis({ user, post }: { user: string; post: string }) {
   const [postState, setPostState] = useState<LayoutNode[]>([])
   const [selected, setSelected] = useState<LayoutNode | null>(null)
+  const treeRef = useRef<Tree | null>(null)
 
   useEffect(() => {
-    getPosts(user, post).then((threadResponse: AtProtoThreadResponse) => {
-      const tree = new Tree(threadResponse.thread)
-      const postState = tree.root.getChildren()
+    getPost(user, post).then((threadResponse: AtProtoThreadResponse) => {
+      treeRef.current = new Tree(threadResponse.thread)
+      const postState = treeRef.current.root.getChildren()
       setPostState(postState)
       setSelected(postState[0])
     })
   }, [user, post])
 
+  const onExpandNode = useCallback((node: LayoutNode) => {
+    if (node.post.hasMoreChildren()) {
+      getPostByAtUri(node.post.post.uri).then((threadResponse: AtProtoThreadResponse) => {
+        if (!treeRef.current) {
+          return
+        }
+        treeRef.current.addReplies(node.post, threadResponse.thread)
+        const postState = treeRef.current.root.getChildren()
+        setPostState(postState)
+      })
+    }
+  }, [])
+
   return (
     <div className="flex h-full">
       <div className="flex-1">
-        <TreeVisualization postState={postState} setSelected={setSelected} />
+        <TreeVisualization
+          postState={postState}
+          onSetSelected={setSelected}
+          onExpandNode={onExpandNode}
+        />
       </div>
       <div className="w-96">
         <Sidebar selected={selected} />

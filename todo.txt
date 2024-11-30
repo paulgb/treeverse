@@ -1,10 +1,14 @@
 - [x] Set initial zoom level appropriately.
 - [x] bring over favicon
 - [x] main landing page
-- [ ] side panel
+- [x] side panel
 - [x] make it live at treeverse.app
 - [x] fix build
 - [x] more detail on main page
 - [x] add license
 - [x] add prettier
 - [x] make it live on github
+
+- [ ] fix weird flash on first data load
+- [ ] don't recenter when loading subtree
+- [ ] rerender entire tree when subtree changes

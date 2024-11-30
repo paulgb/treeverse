@@ -1,8 +1,11 @@
-export async function getPosts(user: string, post: string): Promise<AtProtoThreadResponse> {
+export async function getPost(user: string, post: string): Promise<AtProtoThreadResponse> {
   const atUri = `at://${user}/app.bsky.feed.post/${post}`
+  return getPostByAtUri(atUri)
+}
+
+export async function getPostByAtUri(atUri: string): Promise<AtProtoThreadResponse> {
   const url = new URL('https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread')
   url.searchParams.set('uri', atUri)
-  url.searchParams.set('depth', '6')
 
   const res = await fetch(url)
   const json = await res.json()
