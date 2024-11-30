@@ -30,6 +30,7 @@ export class Tree {
 
   addReplies(parent: Post | null, thread: AtProtoThread): Post {
     let result = this.addRepliesInner(parent, thread)
+    result.complete = true
     this.update()
     return result
   }
@@ -51,6 +52,7 @@ export class Post {
   width: number
   /** Maximum number of descendants in the longest known path from this node. */
   height: number
+  complete: boolean = false
 
   constructor(
     private parent: Post | null,
@@ -74,7 +76,7 @@ export class Post {
   }
 
   hasMoreChildren() {
-    return this.children.length < this.post.replyCount
+    return !this.complete && this.children.length < this.post.replyCount
   }
 
   private getChildrenInner(

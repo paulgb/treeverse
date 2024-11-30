@@ -10,5 +10,7 @@
 - [x] make it live on github
 
 - [ ] fix weird flash on first data load
-- [ ] don't recenter when loading subtree
-- [ ] rerender entire tree when subtree changes
+- [x] don't recenter when loading subtree
+- [x] rerender entire tree when subtree changes
+- [ ] remove red outline when loaded
+- [ ] capture scroll
