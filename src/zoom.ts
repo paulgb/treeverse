@@ -1,23 +1,42 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
-export function useZoomState(initial: {
+interface ZoomState {
   offset: { x: number; y: number }
   scale: number
   target: { width: number; height: number }
-}) {
-  const innerState = useRef(initial)
+}
+
+export function useZoomState() {
+  const innerState = useRef<ZoomState>({
+    offset: { x: 0, y: 0 },
+    scale: 1,
+    target: { width: 0, height: 0 },
+  })
+  const animationFrame = useRef<number | null>(null)
   const [transform, setTransform] = useState('')
 
-  const updateTransform = useCallback(() => {
+  useEffect(() => {
+    return () => {
+      if (animationFrame.current) {
+        cancelAnimationFrame(animationFrame.current)
+      }
+    }
+  }, [])
+
+  const updateTransform = () => {
     setTransform(
       `translate(${innerState.current.offset.x}, ${innerState.current.offset.y}) scale(${innerState.current.scale})`,
     )
-  }, [])
+
+    animationFrame.current = null
+  }
 
   const setTarget = useCallback(
     (target: { width: number; height: number }) => {
       innerState.current.target = target
-      updateTransform()
+      if (!animationFrame.current) {
+        animationFrame.current = requestAnimationFrame(updateTransform)
+      }
     },
     [updateTransform],
   )
@@ -41,23 +60,29 @@ export function useZoomState(initial: {
         innerState.current.offset.y = -bounds.top * yScale
       }
 
-      // innerState.current.scale = Math.min(xScale, yScale)
-      updateTransform()
+      if (!animationFrame.current) {
+        animationFrame.current = requestAnimationFrame(updateTransform)
+      }
     },
     [updateTransform],
   )
 
   const handleWheel = useCallback(
-    (event: React.WheelEvent<SVGSVGElement>) => {
+    (event: WheelEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+
       const { deltaY, clientX, clientY } = event
 
       const oldScale = innerState.current.scale
-      innerState.current.scale *= 1 - deltaY / 100
+      innerState.current.scale *= 1 - deltaY / 10_000
       const scaleDelta = innerState.current.scale / oldScale
       innerState.current.offset.x -= (clientX - innerState.current.offset.x) * (scaleDelta - 1)
       innerState.current.offset.y -= (clientY - innerState.current.offset.y) * (scaleDelta - 1)
 
-      updateTransform()
+      if (!animationFrame.current) {
+        animationFrame.current = requestAnimationFrame(updateTransform)
+      }
     },
     [updateTransform],
   )
@@ -67,7 +92,10 @@ export function useZoomState(initial: {
       if (event.buttons === 1) {
         innerState.current.offset.x += event.movementX
         innerState.current.offset.y += event.movementY
-        updateTransform()
+
+        if (!animationFrame.current) {
+          animationFrame.current = requestAnimationFrame(updateTransform)
+        }
       }
     },
     [updateTransform],

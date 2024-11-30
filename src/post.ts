@@ -5,8 +5,38 @@ export class Tree {
   map: Map<string, Post>
 
   constructor(thread: AtProtoThread) {
-    this.root = new Post(null, 0, thread)
     this.map = new Map<string, Post>()
+    this.root = this.addRepliesInner(null, thread)
+    this.update()
+  }
+
+  addRepliesInner(parent: Post | null, thread: AtProtoThread): Post {
+    let post = this.map.get(thread.post.uri)
+    if (!post) {
+      post = new Post(parent, thread.post)
+      this.map.set(thread.post.uri, post)
+
+      if (parent) {
+        parent.children.push(post)
+      }
+    }
+
+    for (const reply of thread.replies ?? []) {
+      this.addRepliesInner(post, reply)
+    }
+
+    return post
+  }
+
+  addReplies(parent: Post | null, thread: AtProtoThread): Post {
+    let result = this.addRepliesInner(parent, thread)
+    result.complete = true
+    this.update()
+    return result
+  }
+
+  update() {
+    this.root.update()
   }
 }
 
@@ -14,7 +44,7 @@ export interface LayoutNode {
   x: number
   y: number
   parent: LayoutNode | null
-  treeNode: Post
+  post: Post
 }
 
 export class Post {
@@ -22,20 +52,31 @@ export class Post {
   width: number
   /** Maximum number of descendants in the longest known path from this node. */
   height: number
-  post: AtProtoPost
+  complete: boolean = false
 
   constructor(
     private parent: Post | null,
-    private depth: number,
-    thread: AtProtoThread,
+    public post: AtProtoPost,
   ) {
-    this.post = thread.post
-    this.children = (thread.replies ?? []).map((reply) => new Post(this, depth + 1, reply))
+    this.children = []
+    this.width = 1
+    this.height = 1
+  }
+
+  update() {
+    for (const child of this.children) {
+      child.update()
+    }
+
     this.width = Math.max(
       1,
       this.children.reduce((sum, child) => sum + child.width, 0),
     )
-    this.height = this.children.reduce((acc, child) => Math.max(acc, child.height), 0) + 1
+    this.height = this.children.reduce((sum, child) => Math.max(sum, child.height), 0) + 1
+  }
+
+  hasMoreChildren() {
+    return !this.complete && this.children.length < this.post.replyCount
   }
 
   private getChildrenInner(
@@ -48,9 +89,9 @@ export class Post {
       x: xOffset + this.width / 2,
       y: yOffset,
       parent,
-      treeNode: this,
+      post: this,
     }
-    nodes.push(thisNode)
+    nodes.push({ ...thisNode })
 
     for (const child of this.children) {
       nodes.push(...child.getChildrenInner(xOffset, yOffset + 1, thisNode))

@@ -1,6 +1,6 @@
 import { LayoutNode } from '@/post'
 import { useZoomState } from '@/zoom'
-import React, { memo, useCallback, useEffect } from 'react'
+import React, { memo, useCallback, useEffect, useRef } from 'react'
 
 const DIM = 40
 const UNIT = 120
@@ -15,30 +15,45 @@ function smoothPath(point1: { x: number; y: number }, point2: { x: number; y: nu
 
 const TreeVisualizationInner = memo(function TreeVisualization({
   postState,
-  setSelected,
+  onSetSelected,
+  onExpandNode,
 }: {
   postState: LayoutNode[]
-  setSelected: (node: LayoutNode) => void
+  onSetSelected: (node: LayoutNode) => void
+  onExpandNode: (node: LayoutNode) => void
 }) {
   return (
     <>
       <g>
         {postState.map((node) => (
-          <React.Fragment key={node.treeNode.post.uri}>
-            {node.parent && <path d={smoothPath(node.parent, node)} stroke="#aaa" fill="none" />}
+          <React.Fragment key={node.post.post.uri}>
+            {node.parent && (
+              <path
+                stroke="#aaa"
+                fill="none"
+                style={
+                  {
+                    d: `path("${smoothPath(node.parent, node)}")`,
+                    transition: '0.3s',
+                  } as any
+                }
+              />
+            )}
           </React.Fragment>
         ))}
       </g>
       <g>
         {postState.map((node) => (
           <g
-            key={node.treeNode.post.uri}
+            key={node.post.post.uri}
             transform={`translate(${node.x * UNIT}, ${node.y * UNIT})`}
-            onMouseOver={() => setSelected(node)}
+            className="transition-transform duration-300 ease-out"
+            onMouseOver={() => onSetSelected(node)}
+            onDoubleClick={() => onExpandNode(node)}
           >
             <rect x={-DIM / 2} y={-DIM / 2} width={DIM} height={DIM} fill="white" />
             <image
-              href={node.treeNode.post.author.avatar}
+              href={node.post.post.author.avatar}
               x={-DIM / 2}
               y={-DIM / 2}
               width={DIM}
@@ -55,6 +70,17 @@ const TreeVisualizationInner = memo(function TreeVisualization({
               rx={3}
               ry={3}
             />
+            {node.post.hasMoreChildren() && (
+              <g transform={`translate(${DIM / 2}, ${DIM / 2})`}>
+                <circle r={8} fill="#22bb33" stroke="white" />
+                <path
+                  d="M -3 0 L 3 0 M 0 -3 L 0 3"
+                  stroke="white"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                />
+              </g>
+            )}
           </g>
         ))}
       </g>
@@ -64,16 +90,15 @@ const TreeVisualizationInner = memo(function TreeVisualization({
 
 export default function TreeVisualization({
   postState,
-  setSelected,
+  onSetSelected,
+  onExpandNode,
 }: {
   postState: LayoutNode[]
-  setSelected: (node: LayoutNode) => void
+  onSetSelected: (node: LayoutNode) => void
+  onExpandNode: (node: LayoutNode) => void
 }) {
-  const zoomState = useZoomState({
-    offset: { x: 0, y: 0 },
-    scale: 1,
-    target: { width: 0, height: 0 },
-  })
+  const zoomState = useZoomState()
+  const initialized = useRef(false)
 
   useEffect(() => {
     let maxX = 0
@@ -82,31 +107,42 @@ export default function TreeVisualization({
       maxX = Math.max(maxX, node.x * UNIT)
       maxY = Math.max(maxY, node.y * UNIT)
     }
-    zoomState.setBounds({
-      top: -UNIT,
-      left: -UNIT,
-      right: maxX + UNIT,
-      bottom: maxY + UNIT,
-    })
+
+    if (!initialized.current && postState.length > 0) {
+      zoomState.setBounds({
+        top: -UNIT,
+        left: -UNIT,
+        right: maxX + UNIT,
+        bottom: maxY + UNIT,
+      })
+
+      initialized.current = true
+    }
   }, [postState])
 
   const svgRef = useCallback(
     (el: SVGSVGElement) => {
       if (el) {
         zoomState.setTarget({ width: el.clientWidth, height: el.clientHeight })
+
+        // We set this here rather than using onScroll, because we need a passive
+        // event listener in order to prevent the page from scrolling.
+        el.addEventListener('wheel', (event) => {
+          zoomState.handleWheel(event as WheelEvent)
+        })
       }
     },
     [zoomState.setTarget],
   )
+
   return (
-    <svg
-      className="w-full h-full"
-      onWheel={zoomState.handleWheel}
-      onMouseMove={zoomState.handleMouseMove}
-      ref={svgRef}
-    >
+    <svg className="w-full h-full select-none" onMouseMove={zoomState.handleMouseMove} ref={svgRef}>
       <g transform={zoomState.transform}>
-        <TreeVisualizationInner postState={postState} setSelected={setSelected} />
+        <TreeVisualizationInner
+          postState={postState}
+          onSetSelected={onSetSelected}
+          onExpandNode={onExpandNode}
+        />
       </g>
     </svg>
   )
