@@ -6,29 +6,36 @@ export class Tree {
 
   constructor(thread: AtProtoThread) {
     this.map = new Map<string, Post>()
-    this.root = this.addReplies(null, thread)
+    this.root = this.addRepliesInner(null, thread)
+    this.update()
   }
 
-  addReplies(parent: Post | null, thread: AtProtoThread): Post {
+  addRepliesInner(parent: Post | null, thread: AtProtoThread): Post {
     let post = this.map.get(thread.post.uri)
     if (!post) {
       post = new Post(parent, thread.post)
       this.map.set(thread.post.uri, post)
+
+      if (parent) {
+        parent.children.push(post)
+      }
     }
 
-    console.log('thread', thread)
     for (const reply of thread.replies ?? []) {
-      this.addReplies(post, reply)
-      post.children.push(this.map.get(reply.post.uri)!)
+      this.addRepliesInner(post, reply)
     }
-
-    post.width = Math.max(
-      1,
-      post.children.reduce((sum, child) => sum + child.width, 0),
-    )
-    post.height = post.children.reduce((sum, child) => Math.max(sum, child.height), 0) + 1
 
     return post
+  }
+
+  addReplies(parent: Post | null, thread: AtProtoThread): Post {
+    let result = this.addRepliesInner(parent, thread)
+    this.update()
+    return result
+  }
+
+  update() {
+    this.root.update()
   }
 }
 
@@ -54,6 +61,18 @@ export class Post {
     this.height = 1
   }
 
+  update() {
+    for (const child of this.children) {
+      child.update()
+    }
+
+    this.width = Math.max(
+      1,
+      this.children.reduce((sum, child) => sum + child.width, 0),
+    )
+    this.height = this.children.reduce((sum, child) => Math.max(sum, child.height), 0) + 1
+  }
+
   hasMoreChildren() {
     return this.children.length < this.post.replyCount
   }
@@ -70,7 +89,7 @@ export class Post {
       parent,
       post: this,
     }
-    nodes.push(thisNode)
+    nodes.push({ ...thisNode })
 
     for (const child of this.children) {
       nodes.push(...child.getChildrenInner(xOffset, yOffset + 1, thisNode))

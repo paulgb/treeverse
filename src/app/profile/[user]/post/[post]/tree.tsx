@@ -27,7 +27,18 @@ const TreeVisualizationInner = memo(function TreeVisualization({
       <g>
         {postState.map((node) => (
           <React.Fragment key={node.post.post.uri}>
-            {node.parent && <path d={smoothPath(node.parent, node)} stroke="#aaa" fill="none" />}
+            {node.parent && (
+              <path
+                stroke="#aaa"
+                fill="none"
+                style={
+                  {
+                    d: `path("${smoothPath(node.parent, node)}")`,
+                    transition: '0.3s',
+                  } as any
+                }
+              />
+            )}
           </React.Fragment>
         ))}
       </g>
@@ -36,6 +47,7 @@ const TreeVisualizationInner = memo(function TreeVisualization({
           <g
             key={node.post.post.uri}
             transform={`translate(${node.x * UNIT}, ${node.y * UNIT})`}
+            className="transition-transform duration-300 ease-out"
             onMouseOver={() => onSetSelected(node)}
             onDoubleClick={() => onExpandNode(node)}
           >
