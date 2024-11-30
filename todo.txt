@@ -14,5 +14,5 @@
 - [x] rerender entire tree when subtree changes
 - [x] remove red outline when loaded
 - [x] capture scroll
-- [ ] batch state updates
-
+- [x] batch state updates
+- [ ] zoom should never go negative(!)
