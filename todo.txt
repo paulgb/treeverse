@@ -12,5 +12,5 @@
 - [ ] fix weird flash on first data load
 - [x] don't recenter when loading subtree
 - [x] rerender entire tree when subtree changes
-- [ ] remove red outline when loaded
-- [ ] capture scroll
+- [x] remove red outline when loaded
+- [x] capture scroll

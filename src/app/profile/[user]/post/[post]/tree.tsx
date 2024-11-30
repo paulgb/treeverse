@@ -113,14 +113,20 @@ export default function TreeVisualization({
     (el: SVGSVGElement) => {
       if (el) {
         zoomState.setTarget({ width: el.clientWidth, height: el.clientHeight })
+
+        // We set this here rather than using onScroll, because we need a passive
+        // event listener in order to prevent the page from scrolling.
+        el.addEventListener('wheel', (event) => {
+          zoomState.handleWheel(event as WheelEvent)
+        })
       }
     },
     [zoomState.setTarget],
   )
+
   return (
     <svg
       className="w-full h-full"
-      onWheel={zoomState.handleWheel}
       onMouseMove={zoomState.handleMouseMove}
       ref={svgRef}
     >

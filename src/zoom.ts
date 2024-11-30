@@ -53,7 +53,10 @@ export function useZoomState() {
   )
 
   const handleWheel = useCallback(
-    (event: React.WheelEvent<SVGSVGElement>) => {
+    (event: WheelEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+      
       const { deltaY, clientX, clientY } = event
 
       const oldScale = innerState.current.scale
