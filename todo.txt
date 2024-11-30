@@ -14,3 +14,5 @@
 - [x] rerender entire tree when subtree changes
 - [x] remove red outline when loaded
 - [x] capture scroll
+- [ ] batch state updates
+
