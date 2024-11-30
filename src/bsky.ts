@@ -1,7 +1,6 @@
-export async function getPost(user: string, post: string): Promise<AtProtoThreadResponse> {
 import { getCachedResponse, setCachedResponse } from './cache'
 
-export async function getPosts(user: string, post: string): Promise<AtProtoThreadResponse> {
+export async function getPost(user: string, post: string): Promise<AtProtoThreadResponse> {
   const atUri = `at://${user}/app.bsky.feed.post/${post}`
   return getPostByAtUri(atUri)
 }
