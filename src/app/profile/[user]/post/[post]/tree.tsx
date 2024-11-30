@@ -65,11 +65,22 @@ const TreeVisualizationInner = memo(function TreeVisualization({
               width={DIM}
               height={DIM}
               fill="none"
-              stroke={node.post.hasMoreChildren() ? 'red' : '#ddd'}
+              stroke="#ddd"
               strokeWidth={3}
               rx={3}
               ry={3}
             />
+            {node.post.hasMoreChildren() && (
+              <g transform={`translate(${DIM / 2}, ${DIM / 2})`}>
+                <circle r={8} fill="#22bb33" stroke="white" />
+                <path
+                  d="M -3 0 L 3 0 M 0 -3 L 0 3"
+                  stroke="white"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                />
+              </g>
+            )}
           </g>
         ))}
       </g>
@@ -125,7 +136,7 @@ export default function TreeVisualization({
   )
 
   return (
-    <svg className="w-full h-full" onMouseMove={zoomState.handleMouseMove} ref={svgRef}>
+    <svg className="w-full h-full select-none" onMouseMove={zoomState.handleMouseMove} ref={svgRef}>
       <g transform={zoomState.transform}>
         <TreeVisualizationInner
           postState={postState}
