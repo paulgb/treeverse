@@ -137,13 +137,15 @@ export default function TreeVisualization({
 
   return (
     <svg className="w-full h-full select-none" onMouseMove={zoomState.handleMouseMove} ref={svgRef}>
-      <g transform={zoomState.transform}>
-        <TreeVisualizationInner
-          postState={postState}
-          onSetSelected={onSetSelected}
-          onExpandNode={onExpandNode}
-        />
-      </g>
+      {zoomState.transform && (
+        <g transform={zoomState.transform}>
+          <TreeVisualizationInner
+            postState={postState}
+            onSetSelected={onSetSelected}
+            onExpandNode={onExpandNode}
+          />
+        </g>
+      )}
     </svg>
   )
 }
