@@ -16,3 +16,4 @@
 - [x] capture scroll
 - [x] batch state updates
 - [ ] zoom should never go negative(!)
+- [ ] make it work on mobile

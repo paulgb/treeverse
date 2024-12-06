@@ -34,7 +34,7 @@ export default function Vis({ user, post }: { user: string; post: string }) {
   }, [])
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col md:flex-row h-full">
       <div className="flex-1">
         <TreeVisualization
           postState={postState}
@@ -42,7 +42,7 @@ export default function Vis({ user, post }: { user: string; post: string }) {
           onExpandNode={onExpandNode}
         />
       </div>
-      <div className="w-96">
+      <div className="h-96 md:h-full md:w-96">
         <Sidebar selected={selected} />
       </div>
     </div>
