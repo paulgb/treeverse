@@ -85,7 +85,9 @@ export default function Urlbar() {
   const parts = extractPartsFromUrl(url)
 
   const handleGo = () => {
-    router.push(`/profile/${parts?.profile}/post/${parts?.post}`)
+    if (parts) {
+      router.push(`/profile/${parts.profile}/post/${parts.post}`)
+    }
   }
 
   return (
