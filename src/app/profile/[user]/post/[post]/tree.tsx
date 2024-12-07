@@ -22,6 +22,43 @@ const TreeVisualizationInner = memo(function TreeVisualization({
   onSetSelected: (node: LayoutNode) => void
   onExpandNode: (node: LayoutNode) => void
 }) {
+  const touchTimeout = useRef<NodeJS.Timeout | null>(null)
+  const lastTouchTime = useRef<number>(0)
+
+  const handleTouchStart = useCallback(
+    (node: LayoutNode, event: React.TouchEvent) => {
+      event.preventDefault()
+      const now = Date.now()
+      const timeSinceLastTouch = now - lastTouchTime.current
+
+      if (timeSinceLastTouch < 300) {
+        // Double tap detected
+        if (touchTimeout.current) {
+          clearTimeout(touchTimeout.current)
+          touchTimeout.current = null
+        }
+        onExpandNode(node)
+      } else {
+        // Single tap - wait to see if it's a double tap
+        touchTimeout.current = setTimeout(() => {
+          onSetSelected(node)
+          touchTimeout.current = null
+        }, 300)
+      }
+
+      lastTouchTime.current = now
+    },
+    [onSetSelected, onExpandNode],
+  )
+
+  useEffect(() => {
+    return () => {
+      if (touchTimeout.current) {
+        clearTimeout(touchTimeout.current)
+      }
+    }
+  }, [])
+
   return (
     <>
       <g>
@@ -50,6 +87,7 @@ const TreeVisualizationInner = memo(function TreeVisualization({
             className="transition-transform duration-300 ease-out"
             onMouseOver={() => onSetSelected(node)}
             onDoubleClick={() => onExpandNode(node)}
+            onTouchStart={(e) => handleTouchStart(node, e)}
           >
             <rect x={-DIM / 2} y={-DIM / 2} width={DIM} height={DIM} fill="white" />
             <image
@@ -136,7 +174,14 @@ export default function TreeVisualization({
   )
 
   return (
-    <svg className="w-full h-full select-none" onMouseMove={zoomState.handleMouseMove} ref={svgRef}>
+    <svg
+      className="w-full h-full select-none"
+      onMouseMove={zoomState.handleMouseMove}
+      onTouchStart={zoomState.handleTouchStart}
+      onTouchMove={zoomState.handleTouchMove}
+      onTouchEnd={zoomState.handleTouchEnd}
+      ref={svgRef}
+    >
       {zoomState.transform && (
         <g transform={zoomState.transform}>
           <TreeVisualizationInner
