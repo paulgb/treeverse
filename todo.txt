@@ -17,3 +17,5 @@
 - [x] batch state updates
 - [ ] zoom should never go negative(!)
 - [ ] make it work on mobile
+- [x] show something better on 404 (invalid path construction)
+- [ ] show something useful when skeets can't be loaded
