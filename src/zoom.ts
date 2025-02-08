@@ -8,6 +8,12 @@ interface ZoomState {
   target: { width: number; height: number }
 }
 
+interface TouchState {
+  touchCount: number
+  lastTouchDistance: number | null
+  lastTouchCenter: { x: number; y: number } | null
+}
+
 export function useZoomState() {
   const innerState = useRef<ZoomState>({
     position: null,
@@ -15,6 +21,11 @@ export function useZoomState() {
   })
   const animationFrame = useRef<number | null>(null)
   const [transform, setTransform] = useState('')
+  const touchState = useRef<TouchState>({
+    touchCount: 0,
+    lastTouchDistance: null,
+    lastTouchCenter: null,
+  })
 
   useEffect(() => {
     return () => {
@@ -123,10 +134,91 @@ export function useZoomState() {
     [updateTransform],
   )
 
+  const handleTouchStart = useCallback((event: React.TouchEvent<SVGSVGElement>) => {
+    event.preventDefault()
+    touchState.current.touchCount = event.touches.length
+
+    if (event.touches.length === 2) {
+      const touch1 = event.touches[0]
+      const touch2 = event.touches[1]
+      touchState.current.lastTouchDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY,
+      )
+      touchState.current.lastTouchCenter = {
+        x: (touch1.clientX + touch2.clientX) / 2,
+        y: (touch1.clientY + touch2.clientY) / 2,
+      }
+    }
+  }, [])
+
+  const handleTouchMove = useCallback(
+    (event: React.TouchEvent<SVGSVGElement>) => {
+      event.preventDefault()
+      if (!innerState.current.position) return
+
+      if (event.touches.length === 1) {
+        // Single touch - pan
+        const touch = event.touches[0]
+        const prevTouch = event.changedTouches[0]
+        const movementX = touch.clientX - prevTouch.clientX
+        const movementY = touch.clientY - prevTouch.clientY
+
+        innerState.current.position.offset.x += movementX
+        innerState.current.position.offset.y += movementY
+      } else if (event.touches.length === 2) {
+        // Pinch to zoom
+        const touch1 = event.touches[0]
+        const touch2 = event.touches[1]
+        const currentDistance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY,
+        )
+        const currentCenter = {
+          x: (touch1.clientX + touch2.clientX) / 2,
+          y: (touch1.clientY + touch2.clientY) / 2,
+        }
+
+        if (touchState.current.lastTouchDistance && touchState.current.lastTouchCenter) {
+          const scale = currentDistance / touchState.current.lastTouchDistance
+          const oldScale = innerState.current.position.scale
+          innerState.current.position.scale *= scale
+
+          // Adjust offset to zoom around the center point of the pinch
+          const scaleDelta = innerState.current.position.scale / oldScale
+          innerState.current.position.offset.x -=
+            (currentCenter.x - innerState.current.position.offset.x) * (scaleDelta - 1)
+          innerState.current.position.offset.y -=
+            (currentCenter.y - innerState.current.position.offset.y) * (scaleDelta - 1)
+        }
+
+        touchState.current.lastTouchDistance = currentDistance
+        touchState.current.lastTouchCenter = currentCenter
+      }
+
+      if (!animationFrame.current) {
+        animationFrame.current = requestAnimationFrame(updateTransform)
+      }
+    },
+    [updateTransform],
+  )
+
+  const handleTouchEnd = useCallback((event: React.TouchEvent<SVGSVGElement>) => {
+    event.preventDefault()
+    touchState.current.touchCount = event.touches.length
+    if (event.touches.length < 2) {
+      touchState.current.lastTouchDistance = null
+      touchState.current.lastTouchCenter = null
+    }
+  }, [])
+
   return {
     transform,
     handleWheel,
     handleMouseMove,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
     setBounds,
     setTarget,
   }
